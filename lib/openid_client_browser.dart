@@ -12,10 +12,21 @@ class Authenticator {
 
   Authenticator._(this.flow) : credential = _credentialFromUri(flow);
 
-  Authenticator(Client client, {Iterable<String> scopes = const []})
-      : this._(Flow.implicit(client, state: window.localStorage['openid_client:state'])
-          ..scopes.addAll(scopes)
-          ..redirectUri = Uri.parse(window.location.href).removeFragment());
+  Authenticator(
+    Client client, {
+    Iterable<String> scopes = const [],
+    Uri? redirectUri,
+  }) : this._(
+          Flow.implicit(
+            client,
+            state: window.localStorage['openid_client:state'],
+          )
+            ..scopes.addAll(scopes)
+            ..redirectUri = redirectUri ??
+                Uri.parse(
+                  window.location.href,
+                ).removeFragment(),
+        );
 
   void authorize() {
     _forgetCredentials();
@@ -27,7 +38,9 @@ class Authenticator {
     _forgetCredentials();
     var c = await credential;
     if (c == null) return;
-    var uri = c.generateLogoutUrl(redirectUri: Uri.parse(window.location.href).removeFragment());
+    var uri = c.generateLogoutUrl(
+      redirectUri: Uri.parse(window.location.href).removeFragment(),
+    );
     if (uri != null) {
       window.location.href = uri.toString();
     }
